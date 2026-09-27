@@ -534,3 +534,12 @@ The goal is not to maximise the number of tasks completed. The goal is to help t
 * **Alternative considered:** PostgreSQL (server-based relational database).
 * **What was decided:** SQLite.
 * **Why it was decided:** SQLite is a local file database with zero server setup, which matches the V1 constraint that the app and database will run locally for now. It is sufficient for a single-user local planning app (accounts, sessions, activities, plans, history), keeps installation to `npm install` + `npm start`, and avoids operating a database server. PostgreSQL was rejected for V1 because it adds server installation, user/role management, and connection ops without adding needed V1 capability; it can be revisited if a hosted multi-user version is built later.
+
+---
+
+# **16\. Design Refinement Note — Primary Button Prominence (Task 2)**
+
+* **What changed:** The primary "Get my suggested plan" button in `design.html` was made more visually prominent.
+* **Default state:** Now uses higher contrast with a subtle shadow.
+* **Hover state:** A clear hover state was added with a stronger shadow and slight lift.
+* **Palette:** The existing colour palette was retained (no new colours introduced).

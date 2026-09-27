@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Daily Planning Assistant — Design Preview (Task 2)</title>
+<style>
+  :root {
+    /* Product colors */
+    --bg: #F6F4EE;
+    --surface: #FFFFFF;
+    --ink: #1E2430;
+    --muted: #6B7280;
+    --primary: #2F3E9E;
+    --primary-dark: #232E78;
+    --accent: #E8A33D;
+    --success: #2E7D5B;
+    --warning: #B45309;
+    --rest: #5B7FA6;
+    --border: #E5E1D8;
+    --high: #C0392B;
+    --medium: #B7791F;
+    --low: #5B7FA6;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--ink);
+    font-family: "Segoe UI", system-ui, -apple-system, Arial, sans-serif;
+    line-height: 1.5;
+  }
+  .wrap { max-width: 1080px; margin: 0 auto; padding: 32px 20px 64px; }
+  header.hero {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 28px;
+    display: flex;
+    gap: 24px;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+  }
+  .brand h1 {
+    font-family: Georgia, "Times New Roman", serif;
+    font-size: 32px;
+    margin: 0 0 8px;
+    letter-spacing: -0.02em;
+  }
+  .brand h1 span { color: var(--primary); }
+  .brand p { margin: 0; color: var(--muted); max-width: 56ch; }
+  .palette { display: flex; gap: 10px; margin-top: 16px; flex-wrap: wrap; }
+  .swatch {
+    display: flex; align-items: center; gap: 8px;
+    background: var(--bg); border: 1px solid var(--border);
+    border-radius: 999px; padding: 6px 12px 6px 6px; font-size: 13px;
+  }
+  .dot { width: 22px; height: 22px; border-radius: 50%; border: 1px solid rgba(0,0,0,.15); }
+  .type-card {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 16px; padding: 20px 24px; margin-top: 20px;
+  }
+  .type-card h2 { font-size: 18px; margin: 0 0 4px; }
+  .type-card .samples h1 { font-family: Georgia, serif; margin: 12px 0 0; }
+  .grid { display: grid; grid-template-columns: 1.1fr .9fr; gap: 20px; margin-top: 20px; }
+  @media (max-width: 860px) { .grid { grid-template-columns: 1fr; } }
+  .card {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 16px; padding: 22px;
+  }
+  .card h2 { margin: 0 0 4px; font-size: 19px; font-family: Georgia, serif; }
+  .card .sub { color: var(--muted); font-size: 14px; margin: 0 0 16px; }
+  .prompt { font-size: 20px; font-weight: 600; margin: 0 0 12px; }
+  label.field-label { display: block; font-size: 13px; font-weight: 600; color: var(--muted); margin: 14px 0 6px; text-transform: uppercase; letter-spacing: .06em; }
+  textarea, input[type="text"], select {
+    width: 100%; border: 1.5px solid var(--border); border-radius: 12px;
+    padding: 12px 14px; font: inherit; background: #FFFDF8; color: var(--ink);
+  }
+  textarea:focus, input:focus, select:focus { outline: 2px solid var(--primary); border-color: var(--primary); }
+  .btn {
+    display: inline-block; border: none; cursor: pointer; font: inherit; font-weight: 700;
+    padding: 12px 20px; border-radius: 12px; transition: transform .05s ease;
+  }
+  .btn-primary { background: var(--primary-dark); color: #fff; box-shadow: 0 4px 14px rgba(35, 46, 120, 0.35); }
+  .btn-primary:hover { background: var(--ink); box-shadow: 0 6px 18px rgba(30, 36, 48, 0.4); transform: translateY(-1px); }
+  .btn-ghost { background: transparent; border: 1.5px solid var(--border); color: var(--ink); }
+  .btn-accent { background: var(--accent); color: #2A1E05; }
+  .row { display: flex; gap: 12px; flex-wrap: wrap; margin-top: 16px; }
+  .seg { display: inline-flex; background: var(--bg); border: 1px solid var(--border); border-radius: 999px; padding: 4px; gap: 4px; }
+  .seg button { border: none; background: transparent; padding: 8px 16px; border-radius: 999px; font: inherit; cursor: pointer; color: var(--muted); }
+  .seg button.active { background: var(--ink); color: #fff; }
+  .pill { display: inline-block; font-size: 12px; font-weight: 700; padding: 3px 10px; border-radius: 999px; text-transform: uppercase; letter-spacing: .05em; }
+  .pill.high { background: #FADBD8; color: var(--high); }
+  .pill.medium { background: #FCF0D3; color: var(--medium); }
+  .pill.low { background: #DCE9F5; color: var(--low); }
+  ul.plan { list-style: none; margin: 12px 0 0; padding: 0; display: grid; gap: 10px; }
+  ul.plan li { border: 1px solid var(--border); border-radius: 12px; padding: 12px 14px; display: flex; gap: 12px; align-items: flex-start; background: #FFFDF8; }
+  .time { font-variant-numeric: tabular-nums; font-weight: 700; white-space: nowrap; color: var(--primary); }
+  .timer { font-size: 40px; font-variant-numeric: tabular-nums; font-weight: 800; letter-spacing: -0.02em; }
+  .flow { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 12px; }
+  .flow span { background: var(--ink); color: #fff; font-size: 12px; padding: 5px 10px; border-radius: 999px; }
+  footer.note { color: var(--muted); font-size: 13px; margin-top: 20px; text-align: center; }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="hero">
+    <div class="brand">
+      <h1>Daily Planning <span>Assistant</span></h1>
+      <p>Design preview for Task 2. Calm, simple, conversational. The AI recommends — the user decides.</p>
+      <div class="palette" aria-label="Product colors">
+        <span class="swatch"><span class="dot" style="background:#2F3E9E"></span>Primary #2F3E9E</span>
+        <span class="swatch"><span class="dot" style="background:#E8A33D"></span>Accent #E8A33D</span>
+        <span class="swatch"><span class="dot" style="background:#F6F4EE"></span>Background #F6F4EE</span>
+        <span class="swatch"><span class="dot" style="background:#1E2430"></span>Ink #1E2430</span>
+        <span class="swatch"><span class="dot" style="background:#2E7D5B"></span>Success #2E7D5B</span>
+      </div>
+    </div>
+    <div>
+      <div class="seg" aria-label="Planning session">
+        <button type="button">Today</button>
+        <button type="button" class="active">Tomorrow</button>
+      </div>
+      <div class="flow" aria-label="Core flow">
+        <span>Brain Dump</span><span>Prioritise</span><span>Reality Check</span><span>Plan</span><span>Focus</span><span>Review</span>
+      </div>
+    </div>
+  </header>
+
+  <div class="type-card">
+    <h2>Typography</h2>
+    <p class="sub" style="color:var(--muted);font-size:14px;margin:0;">Display: Georgia serif for headings · Body/UI: Segoe UI system stack. Body 16px, headings tight.</p>
+    <div class="samples">
+      <h1>Know what matters today. (Display)</h1>
+      <p>Body text: “What’s on your mind? Tell me everything you want to get done.” Buttons use 700-weight UI text.</p>
+    </div>
+  </div>
+
+  <div class="grid">
+    <section class="card" aria-label="Brain dump">
+      <h2>1 · Brain Dump</h2>
+      <p class="sub">Freeform input — no organising needed first.</p>
+      <p class="prompt">“What’s on your mind? Tell me everything you want to get done.”</p>
+      <label class="field-label" for="dump">Sample input field</label>
+      <textarea id="dump" rows="5">Finish math assignment, call mum, gym 30 min, prepare slides for Friday demo, read 20 pages, fix bike tyre!!!</textarea>
+      <label class="field-label" for="period">Productive period</label>
+      <select id="period">
+        <option>Night (my peak hours)</option>
+        <option>Morning</option>
+        <option>Afternoon</option>
+        <option>Evening</option>
+      </select>
+      <div class="row">
+        <button class="btn btn-primary" type="button">Get my suggested plan</button>
+        <button class="btn btn-ghost" type="button">Save draft</button>
+      </div>
+    </section>
+
+    <section class="card" aria-label="Priorities and plan">
+      <h2>2 · Priorities &amp; Suggested Plan</h2>
+      <p class="sub">AI recommends with short reasons. You have final control.</p>
+      <ul class="plan">
+        <li><span class="time">21:00</span><div><span class="pill high">High</span><br /><strong>Finish math assignment</strong><br /><span style="color:var(--muted)">Due tomorrow — biggest deadline.</span></div></li>
+        <li><span class="time">22:15</span><div><span class="pill high">High</span><br /><strong>Prepare slides for Friday demo</strong><br /><span style="color:var(--muted)">Dependency for the rest of the week.</span></div></li>
+        <li><span class="time">23:15</span><div><span class="pill medium">Medium</span><br /><strong>Gym · 30 min</strong><br /><span style="color:var(--muted)">Fits your night peak; keeps energy up.</span></div></li>
+        <li><span class="time">Later</span><div><span class="pill low">Can wait</span><br /><strong>Fix bike tyre</strong><br /><span style="color:var(--muted)">No deadline — carry forward if needed.</span></div></li>
+      </ul>
+      <div class="row">
+        <button class="btn btn-accent" type="button">Start focus · 25:00</button>
+        <button class="btn btn-ghost" type="button">Adjust plan</button>
+      </div>
+    </section>
+  </div>
+
+  <div class="grid">
+    <section class="card" aria-label="Focus session">
+      <h2>3 · Focus Session</h2>
+      <p class="sub">One activity, one timer. Breaks suggested after focus.</p>
+      <div class="timer">25:00</div>
+      <p style="margin:6px 0 0;"><strong>Now:</strong> Finish math assignment</p>
+      <div class="row">
+        <button class="btn btn-primary" type="button">Start focus</button>
+        <button class="btn btn-ghost" type="button">Take a short break</button>
+      </div>
+    </section>
+    <section class="card" aria-label="Daily review">
+      <h2>4 · Daily Review</h2>
+      <p class="sub">Mark progress, carry forward what remains.</p>
+      <label class="field-label" for="status">Sample status input</label>
+      <input type="text" id="status" value="Math assignment — Completed; Slides — Partially completed" />
+      <div class="row">
+        <button class="btn btn-primary" type="button">Complete review</button>
+        <button class="btn btn-ghost" type="button">Carry forward 2 items</button>
+      </div>
+    </section>
+  </div>
+
+  <footer class="note">Task 2 preview only — static mock. Full app build comes in Task 3.</footer>
+</div>
+</body>
+</html>

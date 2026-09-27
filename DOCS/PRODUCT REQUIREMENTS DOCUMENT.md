@@ -481,3 +481,56 @@ The AI is a planning assistant.
 The user remains the decision-maker.
 
 The goal is not to maximise the number of tasks completed. The goal is to help the user make a realistic plan around what matters and follow through on it.
+
+---
+
+# **14\. Implementation Plan — Task 1 (V1 Build Order)**
+
+## **Technology Choices**
+
+* **Framework:** Node.js + Express backend with a vanilla HTML/CSS/JavaScript frontend (the frontend will become `design.html` in Task 2).
+* **Database:** SQLite (local file database, better-sqlite3 / sqlite3 driver).
+* **Authentication:** Local email + password authentication with bcrypt password hashing and server-side sessions (no third-party auth provider for V1).
+* **File storage:** Local filesystem storage (no cloud object storage for V1).
+* **Local run statement:** The app and database will run locally for now. No cloud hosting, managed database, or external auth/file service is required for V1.
+
+## **Ordered Phases and Deliverables**
+
+### **Phase 1 — Local Foundation**
+
+* Set up Node.js + Express project, SQLite schema, and local run docs.
+* **Deliverables:** runnable local app skeleton, `schema.sql`, `README` run instructions (`npm install`, `npm start`), working local SQLite file.
+
+### **Phase 2 — Accounts, Sessions, and Schedule (FR-01, FR-02, FR-03, FR-14)**
+
+* Local sign-up/sign-in with sessions, today/tomorrow planning sessions, productive-period preference, saved history views.
+* **Deliverables:** working auth flow, planning-session CRUD, schedule-preference setting, history page backed by SQLite.
+
+### **Phase 3 — Brain Dump, Clarification, and Prioritisation (FR-04, FR-05, FR-06)**
+
+* Freeform brain-dump input, clarification-question flow, High/Medium/Low prioritisation with explanations.
+* **Deliverables:** brain-dump screen, clarification Q&A flow, prioritised activity list with reasons.
+
+### **Phase 4 — Reality Check, Plan Generation, and Editing (FR-07, FR-08, FR-09)**
+
+* Unrealistic-workload detection, suggested plan with ordering/time blocks/breaks, full user editing (add/remove/edit/reorder/retime).
+* **Deliverables:** reality-check output, editable suggested plan, persisted final plan.
+
+### **Phase 5 — Focus, Breaks, Review, and Carry Forward (FR-10, FR-11, FR-12, FR-13)**
+
+* Focus timer per activity, break reminders, status updates, daily review summary, carry-forward of unfinished items.
+* **Deliverables:** focus timer, break reminder, review screen, carry-forward action.
+
+### **Phase 6 — Acceptance Pass and Hardening**
+
+* End-to-end check against Section 11 acceptance criteria and Section 12 conditions for success using a local account and local database.
+* **Deliverables:** verified V1 demo (plan → focus → review), fixed defects, updated local-run notes.
+
+---
+
+# **15\. Decision Note — Database Choice (Task 1 Review)**
+
+* **Tool/technology choice:** Database for V1.
+* **Alternative considered:** PostgreSQL (server-based relational database).
+* **What was decided:** SQLite.
+* **Why it was decided:** SQLite is a local file database with zero server setup, which matches the V1 constraint that the app and database will run locally for now. It is sufficient for a single-user local planning app (accounts, sessions, activities, plans, history), keeps installation to `npm install` + `npm start`, and avoids operating a database server. PostgreSQL was rejected for V1 because it adds server installation, user/role management, and connection ops without adding needed V1 capability; it can be revisited if a hosted multi-user version is built later.

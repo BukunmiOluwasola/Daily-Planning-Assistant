@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Daily Planning Assistant — Local Prototype</title>
+<style>
+  :root {
+    --bg: #F6F4EE; --surface: #FFFFFF; --ink: #1E2430; --muted: #6B7280;
+    --primary: #2F3E9E; --primary-dark: #232E78; --accent: #E8A33D;
+    --border: #E5E1D8; --high: #C0392B; --medium: #B7791F; --low: #5B7FA6;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--ink);
+    font-family: "Segoe UI", system-ui, -apple-system, Arial, sans-serif; line-height: 1.5; }
+  .wrap { max-width: 900px; margin: 0 auto; padding: 28px 18px 60px; }
+  .card { background: var(--surface); border: 1px solid var(--border);
+    border-radius: 14px; padding: 20px; margin-top: 16px; }
+  h1 { font-family: Georgia, serif; margin: 0; font-size: 28px; }
+  h1 span { color: var(--primary); }
+  h2 { font-family: Georgia, serif; font-size: 19px; margin: 0 0 4px; }
+  .sub { color: var(--muted); font-size: 14px; margin: 0 0 12px; }
+  .demo-tag { display: inline-block; background: var(--ink); color: #fff; font-size: 12px;
+    padding: 3px 10px; border-radius: 999px; margin-top: 8px; }
+  textarea, input[type="text"], select {
+    width: 100%; border: 1.5px solid var(--border); border-radius: 10px;
+    padding: 10px 12px; font: inherit; background: #FFFDF8; color: var(--ink); }
+  .btn { display: inline-block; border: none; cursor: pointer; font: inherit; font-weight: 700;
+    padding: 11px 18px; border-radius: 10px; }
+  .btn-primary { background: var(--primary-dark); color: #fff;
+    box-shadow: 0 4px 14px rgba(35, 46, 120, 0.35); }
+  .btn-primary:hover { background: var(--ink); transform: translateY(-1px); }
+  .btn-ghost { background: transparent; border: 1.5px solid var(--border); color: var(--ink); }
+  .btn-accent { background: var(--accent); color: #2A1E05; }
+  .btn-small { padding: 5px 10px; font-size: 13px; border-radius: 8px; }
+  .row { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 12px; align-items: center; }
+  .pill { display: inline-block; font-size: 12px; font-weight: 700; padding: 2px 10px;
+    border-radius: 999px; text-transform: uppercase; }
+  .pill.high { background: #FADBD8; color: var(--high); }
+  .pill.medium { background: #FCF0D3; color: var(--medium); }
+  .pill.low { background: #DCE9F5; color: var(--low); }
+  ul.items { list-style: none; margin: 12px 0 0; padding: 0; display: grid; gap: 8px; }
+  ul.items li { border: 1px solid var(--border); border-radius: 10px; padding: 10px 12px;
+    background: #FFFDF8; display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+  ul.items li .grow { flex: 1; min-width: 180px; }
+  .time { font-weight: 700; color: var(--primary); white-space: nowrap; }
+  .warn { background: #FDF0D3; border: 1px solid var(--accent); border-radius: 10px;
+    padding: 10px 14px; margin-top: 12px; font-size: 14px; }
+  .timer { font-size: 38px; font-weight: 800; font-variant-numeric: tabular-nums; }
+  select.inline { width: auto; padding: 5px 8px; font-size: 13px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Daily Planning <span>Assistant</span></h1>
+  <p class="sub">Local prototype with sample data only. No login, no database, nothing leaves your browser.</p>
+  <span class="demo-tag">PROTOTYPE · SAMPLE DATA</span>
+
+  <!-- 1. Session + schedule -->
+  <section class="card">
+    <h2>1 · Planning session</h2>
+    <p class="sub">Primary use case: plan tomorrow, the night before.</p>
+    <div class="row">
+      <label>Day:
+        <select id="day" class="inline">
+          <option value="tomorrow" selected>Tomorrow</option>
+          <option value="today">Today</option>
+        </select>
+      </label>
+      <label>My peak hours:
+        <select id="period" class="inline">
+          <option value="21">Night (start 21:00)</option>
+          <option value="9">Morning (start 09:00)</option>
+          <option value="13">Afternoon (start 13:00)</option>
+          <option value="18">Evening (start 18:00)</option>
+        </select>
+      </label>
+    </div>
+  </section>
+
+  <!-- 2. Brain dump -->
+  <section class="card">
+    <h2>2 · Brain dump</h2>
+    <p class="sub">“What’s on your mind? Tell me everything you want to get done.”</p>
+    <textarea id="dump" rows="5">Finish math assignment due tomorrow
+Call mum
+Gym 30 min
+Prepare slides for Friday demo
+Read 20 pages
+Fix bike tyre
+Water the plants</textarea>
+    <div class="row">
+      <button class="btn btn-primary" id="parseBtn" type="button">Get my suggested plan</button>
+      <button class="btn btn-ghost" id="resetBtn" type="button">Reset sample data</button>
+    </div>
+  </section>
+
+  <!-- 3. Priorities -->
+  <section class="card">
+    <h2>3 · Priorities &amp; reality check</h2>
+    <p class="sub">Prototype rule: “due / deadline / tomorrow” → High · “gym / read / call” → Medium · rest → Can wait. Adjust freely — you decide.</p>
+    <div id="reality"></div>
+    <ul class="items" id="activityList"></ul>
+  </section>
+
+  <!-- 4. Suggested plan -->
+  <section class="card">
+    <h2>4 · Suggested plan</h2>
+    <p class="sub">Ordered time blocks from your peak start. A 10-min break is added after every 50 min of work.</p>
+    <div class="row">
+      <input type="text" id="newActivity" placeholder="Add an activity…" style="flex:1;min-width:200px;" />
+      <button class="btn btn-ghost btn-small" id="addBtn" type="button">Add</button>
+    </div>
+    <ul class="items" id="planList"></ul>
+  </section>
+
+  <!-- 5. Focus + break -->
+  <section class="card">
+    <h2>5 · Focus &amp; break</h2>
+    <p class="sub">Pick an activity, start the timer. When it ends, take a short break.</p>
+    <div class="row">
+      <select id="focusPick" class="inline"></select>
+      <button class="btn btn-accent btn-small" id="focusStart" type="button">Start 25:00</button>
+      <button class="btn btn-ghost btn-small" id="focusPause" type="button">Pause</button>
+      <button class="btn btn-ghost btn-small" id="focusReset" type="button">Reset</button>
+    </div>
+    <div class="timer" id="timer">25:00</div>
+    <div id="breakMsg"></div>
+  </section>
+
+  <!-- 6. Review -->
+  <section class="card">
+    <h2>6 · Daily review</h2>
+    <p class="sub">Mark each activity, then carry forward what remains.</p>
+    <ul class="items" id="reviewList"></ul>
+    <div class="row">
+      <button class="btn btn-primary" id="reviewBtn" type="button">Complete review</button>
+      <button class="btn btn-ghost" id="carryBtn" type="button">Carry forward unfinished</button>
+    </div>
+    <div id="summary"></div>
+  </section>
+</div>
+
+<script>
+(function () {
+  "use strict";
+  var SAMPLE = [
+    "Finish math assignment due tomorrow",
+    "Call mum",
+    "Gym 30 min",
+    "Prepare slides for Friday demo",
+    "Read 20 pages",
+    "Fix bike tyre",
+    "Water the plants"
+  ];
+  var activities = [];
+  var timerSecs = 25 * 60, timerId = null;
+
+  function el(id) { return document.getElementById(id); }
+  function esc(s) { return s.replace(/&/g, "&amp;").replace(/</g, "&lt;"); }
+
+  function guessPriority(text) {
+    var t = text.toLowerCase();
+    if (/(due|deadline|tomorrow|urgent|exam|demo)/.test(t)) return "high";
+    if (/(gym|read|call|slides|assignment)/.test(t)) return "medium";
+    return "low";
+  }
+  function pill(p) {
+    return p === "high" ? '<span class="pill high">High</span>'
+      : p === "medium" ? '<span class="pill medium">Medium</span>'
+      : '<span class="pill low">Can wait</span>';
+  }
+
+  function parse() {
+    var lines = el("dump").value.split("\n").map(function (s) { return s.trim(); })
+      .filter(function (s) { return s.length > 0; });
+    activities = lines.map(function (text, i) {
+      return { id: i, text: text, priority: guessPriority(text), effort: 30, status: "Not Started" };
+    });
+    renderAll();
+  }
+
+  function renderActivities() {
+    var html = activities.map(function (a) {
+      return '<li><span class="grow">' + pill(a.priority) + ' <strong>' + esc(a.text) + '</strong></span>'
+        + '<select class="inline" data-prio="' + a.id + '">'
+        + '<option value="high"' + (a.priority === "high" ? " selected" : "") + '>High</option>'
+        + '<option value="medium"' + (a.priority === "medium" ? " selected" : "") + '>Medium</option>'
+        + '<option value="low"' + (a.priority === "low" ? " selected" : "") + '>Can wait</option>'
+        + '</select>'
+        + '<button class="btn btn-ghost btn-small" data-del="' + a.id + '" type="button">Remove</button></li>';
+    }).join("");
+    el("activityList").innerHTML = html || "<li>No activities — add some above.</li>";
+    var total = activities.reduce(function (n, a) { return n + a.effort; }, 0);
+    el("reality").innerHTML = activities.length > 5
+      ? '<div class="warn"><strong>Reality check:</strong> ' + activities.length + ' activities (~'
+        + Math.round(total / 60 * 10) / 10 + 'h) is likely too much for one day. '
+        + 'Focus on the High items first; the rest can wait or carry forward.</div>'
+      : '<div class="warn" style="background:#E7F2EC;border-color:#2E7D5B;">'
+        + '<strong>Reality check:</strong> workload looks reasonable (' + activities.length + ' items).</div>';
+  }
+
+  function ordered() {
+    var rank = { high: 0, medium: 1, low: 2 };
+    return activities.slice().sort(function (a, b) { return rank[a.priority] - rank[b.priority]; });
+  }
+
+  function renderPlan() {
+    var startH = parseInt(el("period").value, 10), mins = startH * 60, worked = 0;
+    var html = ordered().map(function (a, i) {
+      var h = String(Math.floor(mins / 60) % 24).padStart(2, "0"),
+          m = String(mins % 60).padStart(2, "0");
+      var row = '<li><span class="time">' + h + ':' + m + '</span>'
+        + '<span class="grow">' + pill(a.priority) + ' <strong>' + esc(a.text) + '</strong> (~' + a.effort + ' min)</span>'
+        + '<button class="btn btn-ghost btn-small" data-up="' + a.id + '" type="button">↑</button>'
+        + '<button class="btn btn-ghost btn-small" data-down="' + a.id + '" type="button">↓</button></li>';
+      mins += a.effort; worked += a.effort;
+      if (worked >= 50 && i < ordered().length - 1) {
+        var bh = String(Math.floor(mins / 60) % 24).padStart(2, "0"),
+            bm = String(mins % 60).padStart(2, "0");
+        row += '<li><span class="time">' + bh + ':' + bm + '</span><span class="grow">☕ <em>Break — stand, stretch, water (10 min)</em></span></li>';
+        mins += 10; worked = 0;
+      }
+      return row;
+    }).join("");
+    el("planList").innerHTML = html || "<li>No plan yet — parse your brain dump first.</li>";
+    el("focusPick").innerHTML = ordered().map(function (a) {
+      return '<option value="' + a.id + '">' + esc(a.text) + '</option>';
+    }).join("");
+  }
+
+  function renderReview() {
+    el("reviewList").innerHTML = activities.map(function (a) {
+      return '<li><span class="grow">' + esc(a.text) + '</span>'
+        + '<select class="inline" data-status="' + a.id + '">'
+        + ["Not Started", "In Progress", "Completed", "Partially Completed", "Not Completed"].map(function (s) {
+            return '<option' + (a.status === s ? " selected" : "") + '>' + s + '</option>';
+          }).join("")
+        + '</select></li>';
+    }).join("") || "<li>Nothing to review yet.</li>";
+  }
+
+  function renderAll() { renderActivities(); renderPlan(); renderReview(); }
+
+  function fmt(s) { return String(Math.floor(s / 60)).padStart(2, "0") + ":" + String(s % 60).padStart(2, "0"); }
+  function tick() {
+    timerSecs--;
+    if (timerSecs <= 0) {
+      clearInterval(timerId); timerId = null; timerSecs = 0;
+      el("breakMsg").innerHTML = '<div class="warn"><strong>Time for a break</strong> — stand up, stretch, rest your eyes, drink water. Then continue.</div>';
+    }
+    el("timer").textContent = fmt(timerSecs);
+  }
+
+  el("parseBtn").onclick = parse;
+  el("resetBtn").onclick = function () { el("dump").value = SAMPLE.join("\n"); parse(); };
+  el("period").onchange = renderPlan;
+  el("addBtn").onclick = function () {
+    var v = el("newActivity").value.trim();
+    if (!v) return;
+    activities.push({ id: Date.now(), text: v, priority: guessPriority(v), effort: 30, status: "Not Started" });
+    el("newActivity").value = "";
+    renderAll();
+  };
+  document.addEventListener("click", function (e) {
+    var t = e.target;
+    if (t.dataset.del !== undefined) {
+      activities = activities.filter(function (a) { return String(a.id) !== t.dataset.del; });
+      renderAll();
+    }
+    if (t.dataset.up !== undefined || t.dataset.down !== undefined) {
+      var id = t.dataset.up !== undefined ? t.dataset.up : t.dataset.down;
+      var dir = t.dataset.up !== undefined ? -1 : 1;
+      var ord = ordered(), idx = ord.findIndex(function (a) { return String(a.id) === String(id); });
+      var j = idx + dir;
+      if (idx > -1 && j >= 0 && j < ord.length) {
+        var tmp = ord[idx].priority; ord[idx].priority = ord[j].priority; ord[j].priority = tmp;
+        var byId = {}; ord.forEach(function (a) { byId[a.id] = a.priority; });
+        activities.forEach(function (a) { a.priority = byId[a.id]; });
+        renderAll();
+      }
+    }
+  });
+  document.addEventListener("change", function (e) {
+    var t = e.target;
+    if (t.dataset.prio !== undefined) {
+      var a = activities.filter(function (x) { return String(x.id) === t.dataset.prio; })[0];
+      if (a) { a.priority = t.value; renderAll(); }
+    }
+    if (t.dataset.status !== undefined) {
+      var b = activities.filter(function (x) { return String(x.id) === t.dataset.status; })[0];
+      if (b) b.status = t.value;
+    }
+  });
+  el("focusStart").onclick = function () {
+    if (timerId) return;
+    el("breakMsg").innerHTML = "";
+    timerId = setInterval(tick, 1000);
+  };
+  el("focusPause").onclick = function () { clearInterval(timerId); timerId = null; };
+  el("focusReset").onclick = function () {
+    clearInterval(timerId); timerId = null; timerSecs = 25 * 60;
+    el("timer").textContent = fmt(timerSecs); el("breakMsg").innerHTML = "";
+  };
+  el("reviewBtn").onclick = function () {
+    var done = activities.filter(function (a) { return a.status === "Completed"; }).length;
+    el("summary").innerHTML = '<div class="warn" style="background:#E7F2EC;border-color:#2E7D5B;"><strong>Review:</strong> '
+      + done + ' of ' + activities.length + ' completed.</div>';
+  };
+  el("carryBtn").onclick = function () {
+    var left = activities.filter(function (a) { return a.status !== "Completed"; });
+    el("dump").value = left.map(function (a) { return a.text; }).join("\n") || el("dump").value;
+    parse();
+    el("summary").innerHTML = '<div class="warn"><strong>Carried forward</strong> ' + left.length + ' unfinished item(s) into a new plan.</div>';
+  };
+
+  el("dump").value = SAMPLE.join("\n");
+  parse();
+})();
+</script>
+</body>
+</html>

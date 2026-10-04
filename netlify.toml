@@ -1,0 +1,11 @@
+# Netlify serves the self-contained working prototype (app.html).
+# The Express + SQLite backend (server.js, routes/, db/) cannot run on
+# Netlify's static hosting, so it stays in the repo for local runs (npm start).
+[build]
+  publish = "."
+  command = ""
+
+[[redirects]]
+  from = "/"
+  to = "/app.html"
+  status = 200

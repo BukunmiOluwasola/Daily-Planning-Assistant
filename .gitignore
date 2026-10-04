@@ -1,0 +1,6 @@
+# Local-only artifacts — never committed
+*.db
+*.sqlite
+*.sqlite3
+node_modules/
+.env

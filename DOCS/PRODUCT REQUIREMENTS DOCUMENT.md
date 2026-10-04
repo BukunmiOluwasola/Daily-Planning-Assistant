@@ -543,3 +543,21 @@ The goal is not to maximise the number of tasks completed. The goal is to help t
 * **Default state:** Now uses higher contrast with a subtle shadow.
 * **Hover state:** A clear hover state was added with a stronger shadow and slight lift.
 * **Palette:** The existing colour palette was retained (no new colours introduced).
+
+---
+
+# **17\. Decision Note — Authentication Choice (Phase 2)**
+
+* **Tool/technology choice:** Authentication for V1.
+* **Alternative considered:** Hosted auth providers (e.g. Clerk, Firebase Auth, Auth0).
+* **What was decided:** Local email + password authentication with bcrypt password hashing and server-side sessions.
+* **Why it was decided:** Local auth is free, works fully offline alongside the local app and database, and adds no external service or subscription. It is sufficient for a single-user local V1. Hosted providers were rejected for V1 because they add cost, accounts, and network dependencies without adding needed V1 capability; they can be revisited if a hosted multi-user version is built later.
+
+---
+
+# **18\. Decision Note — File Storage Choice (Phase 2)**
+
+* **Tool/technology choice:** File storage for V1.
+* **Alternative considered:** Local filesystem uploads now, or cloud object storage (e.g. S3-compatible).
+* **What was decided:** File storage: Not required for V1. Reserved for future attachment functionality.
+* **Why it was decided:** The V1 product (brain dump → plan → focus → review) handles text only and the prototype requires no file uploads, so building storage now would add unused code and surface area. If attachments are ever added, local filesystem storage will be evaluated first to preserve the local-first, cost-free constraint.

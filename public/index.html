@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Daily Planning Assistant (Local)</title>
+<link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+<div class="wrap">
+  <h1>Daily Planning <span>Assistant</span></h1>
+  <p class="sub">V1 local build — Phase 4: accounts, sessions, schedule, history.</p>
+
+  <section class="card" id="authCard">
+    <h2>Account</h2>
+    <div class="row">
+      <input type="text" id="email" placeholder="Email" />
+      <input type="password" id="password" placeholder="Password" />
+    </div>
+    <div class="row">
+      <button class="btn btn-primary" id="signupBtn">Sign up</button>
+      <button class="btn btn-ghost" id="loginBtn">Sign in</button>
+      <button class="btn btn-ghost" id="logoutBtn">Sign out</button>
+    </div>
+    <p class="sub" id="meLine"></p>
+  </section>
+
+  <section class="card">
+    <h2>Planning session</h2>
+    <div class="row">
+      <select id="day">
+        <option value="tomorrow">Tomorrow</option>
+        <option value="today">Today</option>
+      </select>
+      <button class="btn btn-primary" id="createSessionBtn">New session</button>
+      <button class="btn btn-ghost" id="refreshBtn">Refresh</button>
+    </div>
+    <div class="row">
+      <label>My peak hours:
+        <select id="period">
+          <option value="morning">Morning</option>
+          <option value="afternoon">Afternoon</option>
+          <option value="evening">Evening</option>
+          <option value="night">Night</option>
+        </select>
+      </label>
+      <button class="btn btn-ghost" id="savePeriodBtn">Save preference</button>
+    </div>
+  </section>
+
+  <section class="card">
+    <h2>Sessions &amp; history</h2>
+    <p class="sub">Your saved planning sessions (newest first). Click one to work on it.</p>
+    <ul class="items" id="sessionList"></ul>
+  </section>
+
+  <section class="card" id="workCard" style="display:none;">
+    <h2 id="workTitle">Session</h2>
+    <p class="sub">Brain dump → clarify → prioritise → plan. (Phase 5)</p>
+    <label for="dump"><strong>Brain dump</strong></label>
+    <textarea id="dump" rows="4" style="width:100%;margin-top:6px;"></textarea>
+    <div class="row">
+      <button class="btn btn-primary" id="parseBtn">Get my suggested plan</button>
+    </div>
+    <h2 style="margin-top:16px;">Clarification</h2>
+    <ul class="items" id="questionList"></ul>
+    <h2 style="margin-top:16px;">Priorities</h2>
+    <div class="row">
+      <button class="btn btn-ghost" id="askAiBtn">Ask AI to prioritise</button>
+    </div>
+    <div id="aiBox"></div>
+    <ul class="items" id="activityList"></ul>
+    <div id="realityBox"></div>
+    <h2 style="margin-top:16px;">Suggested plan</h2>
+    <div class="row">
+      <button class="btn btn-primary" id="genPlanBtn">Generate plan</button>
+    </div>
+    <ul class="items" id="planList"></ul>
+    <h2 style="margin-top:16px;">Focus &amp; break</h2>
+    <div class="row">
+      <select id="focusPick"></select>
+      <button class="btn btn-primary" id="focusStartBtn">Start 25:00</button>
+      <button class="btn btn-ghost" id="focusEndBtn">End now</button>
+    </div>
+    <p style="font-size:32px;font-weight:800;" id="focusTimer">25:00</p>
+    <div id="breakBox"></div>
+    <h2 style="margin-top:16px;">Daily review</h2>
+    <ul class="items" id="reviewList"></ul>
+    <div class="row">
+      <button class="btn btn-primary" id="reviewBtn">Complete review</button>
+      <button class="btn btn-ghost" id="carryBtn">Carry forward unfinished</button>
+    </div>
+    <div id="summaryBox"></div>
+  </section>
+</div>
+<script src="app.js"></script>
+</body>
+</html>

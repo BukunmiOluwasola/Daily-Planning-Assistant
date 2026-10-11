@@ -1,0 +1,12 @@
+[
+  {
+    "relation": ["delegate_permission/common.handle_all_urls"],
+    "target": {
+      "namespace": "android_app",
+      "package_name": "com.bukunmi.dailyplanning",
+      "sha256_cert_fingerprints": [
+        "CA:F7:AC:F6:03:68:2B:60:FF:59:C3:23:90:F9:7B:00:D4:60:BA:0F:9B:1A:AA:E0:85:09:07:92:6C:81:F2:AB"
+      ]
+    }
+  }
+]

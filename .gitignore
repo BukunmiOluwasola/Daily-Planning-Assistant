@@ -8,6 +8,13 @@ dist/
 server.log
 .blobs-local/
 .netlify/
+# Android build outputs (sources under android/ are committed)
+android/.gradle/
+android/app/build/
+android/local.properties
+*.apk
+*.aab
+*.keystore
 
 # Local Netlify folder
 .netlify

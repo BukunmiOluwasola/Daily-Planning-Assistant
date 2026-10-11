@@ -1,11 +1,15 @@
-# Netlify serves the self-contained working prototype (app.html).
-# The Express + SQLite backend (server.js, routes/, db/) cannot run on
-# Netlify's static hosting, so it stays in the repo for local runs (npm start).
+# Netlify serves the full app: static frontend (public/) + Express API as a
+# serverless function backed by persistent Netlify Blobs (no SQLite file,
+# which cannot persist on serverless). Local runs still use SQLite (npm start).
 [build]
-  publish = "."
+  publish = "public"
   command = ""
 
+[functions]
+  directory = "netlify/functions"
+  external_node_modules = ["better-sqlite3"]
+
 [[redirects]]
-  from = "/"
-  to = "/app.html"
+  from = "/api/*"
+  to = "/.netlify/functions/api/:splat"
   status = 200

@@ -72,6 +72,8 @@ Then open `http://localhost:3000`. Data is stored in the git-ignored `daily-plan
 
 Optional AI prioritisation (free tier): create a `.env` file with `GEMINI_API_KEY=your-key` (never committed) and restart. Without a key the app uses local rules and says so.
 
+Hosted runs (e.g. Netlify) use Postgres via `DATABASE_URL` instead of the local SQLite file; the app picks the backend automatically and the API is unchanged.
+
 ## Product Notes (polish pass)
 
 - Landing page (`/` when signed out) → **Plan my day** CTA → sign-in / create-account screen → app. Signed-in users land straight in the app.

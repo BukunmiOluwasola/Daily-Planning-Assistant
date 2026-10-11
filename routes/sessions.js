@@ -1,6 +1,6 @@
 // Planning sessions, productive-period preference, history. All scoped to the signed-in user.
 const express = require("express");
-const db = require("../db/db");
+const store = require("../db");
 
 const router = express.Router();
 const now = () => new Date().toISOString();
@@ -12,64 +12,64 @@ function requireAuth(req, res, next) {
 }
 router.use(requireAuth);
 
-router.get("/", (req, res) => {
-  const rows = db
-    .prepare("SELECT * FROM planning_sessions WHERE user_id = ? ORDER BY id DESC")
-    .all(req.session.userId);
-  res.json(rows);
-});
-
-router.post("/", (req, res) => {
-  const day = req.body && req.body.day;
-  if (!["today", "tomorrow"].includes(day)) {
-    return res.status(400).json({ error: "day must be 'today' or 'tomorrow'." });
+router.get("/", async (req, res) => {
+  try {
+    res.json(await store.listSessions(req.session.userId));
+  } catch (err) {
+    res.status(500).json({ error: "Request failed." });
   }
-  const info = db
-    .prepare("INSERT INTO planning_sessions (user_id, day, created_at) VALUES (?,?,?)")
-    .run(req.session.userId, day, now());
-  res.status(201).json({ id: info.lastInsertRowid, day });
 });
 
-router.get("/:id", (req, res) => {
-  const row = db
-    .prepare("SELECT * FROM planning_sessions WHERE id = ? AND user_id = ?")
-    .get(req.params.id, req.session.userId);
-  if (!row) return res.status(404).json({ error: "Session not found." });
-  row.activities = db
-    .prepare("SELECT * FROM activities WHERE session_id = ? ORDER BY position, id")
-    .all(row.id);
-  res.json(row);
-});
-
-router.put("/preference", (req, res) => {
-  const period = req.body && req.body.productive_period;
-  if (!PERIODS.includes(period)) {
-    return res.status(400).json({ error: "productive_period must be morning/afternoon/evening/night." });
+router.post("/", async (req, res) => {
+  try {
+    const day = req.body && req.body.day;
+    if (!["today", "tomorrow"].includes(day)) {
+      return res.status(400).json({ error: "day must be 'today' or 'tomorrow'." });
+    }
+    const id = await store.createSession(req.session.userId, day, now());
+    res.status(201).json({ id, day });
+  } catch (err) {
+    res.status(500).json({ error: "Request failed." });
   }
-  db.prepare("UPDATE users SET productive_period = ? WHERE id = ?").run(
-    period,
-    req.session.userId
-  );
-  res.json({ productive_period: period });
+});
+
+router.get("/:id", async (req, res) => {
+  try {
+    const row = await store.getSession(req.params.id, req.session.userId);
+    if (!row) return res.status(404).json({ error: "Session not found." });
+    row.activities = await store.listActivities(row.id);
+    res.json(row);
+  } catch (err) {
+    res.status(500).json({ error: "Request failed." });
+  }
+});
+
+router.put("/preference", async (req, res) => {
+  try {
+    const period = req.body && req.body.productive_period;
+    if (!PERIODS.includes(period)) {
+      return res.status(400).json({ error: "productive_period must be morning/afternoon/evening/night." });
+    }
+    await store.setPreference(req.session.userId, period);
+    res.json({ productive_period: period });
+  } catch (err) {
+    res.status(500).json({ error: "Request failed." });
+  }
 });
 
 // History: past sessions with per-status counts.
-router.get("/history/all", (req, res) => {
-  const rows = db
-    .prepare("SELECT * FROM planning_sessions WHERE user_id = ? ORDER BY id DESC")
-    .all(req.session.userId);
-  const counts = db
-    .prepare(
-      `SELECT session_id, status, COUNT(*) AS n FROM activities
-       WHERE session_id IN (SELECT id FROM planning_sessions WHERE user_id = ?)
-       GROUP BY session_id, status`
-    )
-    .all(req.session.userId);
-  const bySession = {};
-  for (const c of counts) {
-    (bySession[c.session_id] = bySession[c.session_id] || []).push({ status: c.status, n: c.n });
+router.get("/history/all", async (req, res) => {
+  try {
+    const rows = await store.listSessions(req.session.userId);
+    const counts = await store.historyCounts(req.session.userId);
+    const bySession = {};
+    for (const c of counts) {
+      (bySession[c.session_id] = bySession[c.session_id] || []).push({ status: c.status, n: c.n });
+    }
+    res.json(rows.map((s) => ({ ...s, activity_counts: bySession[s.id] || [] })));
+  } catch (err) {
+    res.status(500).json({ error: "Request failed." });
   }
-  res.json(rows.map((s) => ({ ...s, activity_counts: bySession[s.id] || [] })));
 });
 
 module.exports = router;

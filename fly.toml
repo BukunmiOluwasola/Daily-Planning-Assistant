@@ -1,0 +1,20 @@
+# Fly.io config for the full Express + SQLite app.
+# A persistent volume (mounted at /data) keeps daily-planner.db across deploys.
+app = "daily-planning-assistant"
+primary_region = "lhr"
+
+[build]
+
+[http_service]
+  internal_port = 3000
+  force_https = true
+  auto_stop_machines = "stop"
+  auto_start_machines = true
+  min_machines_running = 0
+
+[[mounts]]
+  source = "dpa_data"
+  destination = "/data"
+
+[env]
+  DATA_DIR = "/data"

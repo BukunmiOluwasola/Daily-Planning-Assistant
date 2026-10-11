@@ -1,0 +1,18 @@
+node_modules
+.git
+.gitignore
+*.db
+*.sqlite
+*.sqlite3
+.env
+dist
+server.log
+PRODUCT REQUIREMENT DOCUMENT SCREENSHOT.PNG
+QUBATOR ONBOARDING.txt
+DOCS
+README.md
+IMPLEMENTATION_PLAN.md
+DESIGN_SYSTEM.md
+app.html
+design.html
+netlify.toml

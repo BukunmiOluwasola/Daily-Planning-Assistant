@@ -561,6 +561,39 @@ document.addEventListener("click", async (e) => {
   } catch (err) { toast(err.message, "err"); }
 });
 
+// ---- PWA: service worker + visible install ----
+if ("serviceWorker" in navigator) {
+  window.addEventListener("load", () => {
+    navigator.serviceWorker.register("sw.js").catch((err) => {
+      console.warn("Service worker not registered:", err);
+    });
+  });
+}
+let deferredInstall = null;
+window.addEventListener("beforeinstallprompt", (e) => {
+  e.preventDefault();
+  deferredInstall = e;
+});
+function isIOS() {
+  return /iphone|ipad|ipod/i.test(navigator.userAgent || "") && !window.MSStream;
+}
+async function installApp() {
+  if (deferredInstall) {
+    deferredInstall.prompt();
+    await deferredInstall.userChoice.catch(() => {});
+    deferredInstall = null;
+    return;
+  }
+  if (isIOS()) {
+    toast("On iPhone/iPad: tap Share, then “Add to Home Screen”.", "ok");
+    return;
+  }
+  toast("In your browser menu, choose “Install app” or “Add to Home screen”.", "ok");
+}
+document.querySelectorAll(".install-btn").forEach((b) => {
+  b.addEventListener("click", installApp);
+});
+
 // ---- Boot: signed-in users skip landing ----
 (async function boot() {
   try {

@@ -30,6 +30,17 @@ router.post("/sessions/:id/focus", (req, res) => {
   res.status(201).json({ id: info.lastInsertRowid, activity_id: a.id, duration_min: mins });
 });
 
+// Latest still-running focus session in this session's activities (for resume after reload).
+router.get("/sessions/:id/focus/open", (req, res) => {
+  const s = ownSession(db, req.params.id, req.session.userId);
+  if (!s) return res.status(404).json({ error: "Session not found." });
+  const f = db.prepare(
+    `SELECT f.* FROM focus_sessions f JOIN activities a ON a.id=f.activity_id
+     WHERE a.session_id=? AND f.ended_at IS NULL ORDER BY f.id DESC LIMIT 1`
+  ).get(s.id);
+  res.json(f || null);
+});
+
 // End a focus session; the response carries the break reminder.
 router.patch("/focus/:id", (req, res) => {
   const f = db.prepare(

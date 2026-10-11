@@ -2,6 +2,7 @@
 // Run: npm start  →  http://localhost:3000
 require("dotenv").config();
 const path = require("path");
+const crypto = require("crypto");
 const express = require("express");
 const session = require("express-session");
 
@@ -15,11 +16,19 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 
 app.use(express.json());
+// Local V1: prefer SESSION_SECRET from the environment; otherwise use a random
+// per-boot secret (sessions reset on restart) so no secret ships in the repo.
+const sessionSecret = process.env.SESSION_SECRET || crypto.randomBytes(32).toString("hex");
+if (!process.env.SESSION_SECRET) {
+  console.log("Note: SESSION_SECRET not set — using a random per-boot secret (sign-ins reset on restart).");
+}
+const SQLiteStore = require("./lib/session-store");
 app.use(
   session({
-    secret: "daily-planning-local-dev-secret",
+    secret: sessionSecret,
     resave: false,
     saveUninitialized: false,
+    store: new SQLiteStore(require("./db/db")),
   })
 );
 

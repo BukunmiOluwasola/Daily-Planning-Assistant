@@ -60,3 +60,10 @@ CREATE INDEX IF NOT EXISTS idx_sessions_user ON planning_sessions(user_id);
 CREATE INDEX IF NOT EXISTS idx_activities_session ON activities(session_id);
 CREATE INDEX IF NOT EXISTS idx_items_plan ON plan_items(plan_id);
 CREATE INDEX IF NOT EXISTS idx_focus_activity ON focus_sessions(activity_id);
+
+-- Server-side login sessions (express-session store). Local only, never synced.
+CREATE TABLE IF NOT EXISTS sessions (
+  sid    TEXT PRIMARY KEY,
+  sess   TEXT NOT NULL,
+  expire INTEGER NOT NULL
+);

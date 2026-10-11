@@ -21,9 +21,11 @@ async function ensureSchema() {
       const reg = await client()`SELECT to_regclass('public.users') AS t`;
       if (!reg[0].t) {
         // One statement per call: the HTTP driver rejects multi-statement strings.
-        const stmts = fs.readFileSync(path.join(__dirname, "..", "schema-pg.sql"), "utf8")
-          .split(";").map((s) => s.trim()).filter(Boolean);
-        for (const s of stmts) await client()(s);
+        // Strip full-line comments first so embedded semicolons can't split mid-statement.
+        const src = fs.readFileSync(path.join(__dirname, "..", "schema-pg.sql"), "utf8")
+          .split("\n").filter((l) => !l.trimStart().startsWith("--")).join("\n");
+        const stmts = src.split(";").map((s) => s.trim()).filter(Boolean);
+        for (const s of stmts) await client().query(s);
       }
     })();
   }
@@ -31,7 +33,7 @@ async function ensureSchema() {
 }
 async function q(text, params = []) {
   await ensureSchema();
-  return client()(text, params);
+  return client().query(text, params);
 }
 const num = (v) => (typeof v === "string" ? Number(v) : v);
 

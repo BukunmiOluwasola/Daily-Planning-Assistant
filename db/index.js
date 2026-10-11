@@ -14,9 +14,9 @@ const NAMES = [
 let impl = null;
 function backend() {
   if (!impl) {
-    if (process.env.STORE === "pg" || process.env.DATABASE_URL) impl = require("./store-pg");
-    else if (process.env.STORE === "blobs" || process.env.NETLIFY === "true") impl = require("./store-blobs");
-    else impl = require("./store-sqlite");
+    impl = (process.env.STORE === "pg" || process.env.DATABASE_URL)
+      ? require("./store-pg")
+      : require("./store-sqlite");
   }
   return impl;
 }
@@ -26,6 +26,5 @@ for (const name of NAMES) {
 }
 module.exports.backendName = () => {
   if (process.env.STORE === "pg" || process.env.DATABASE_URL) return "pg";
-  if (process.env.STORE === "blobs" || process.env.NETLIFY === "true") return "blobs";
   return "sqlite";
 };

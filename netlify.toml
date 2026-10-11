@@ -8,6 +8,7 @@
 [functions]
   directory = "netlify/functions"
   external_node_modules = ["better-sqlite3"]
+  included_files = ["schema-pg.sql"]
 
 [[redirects]]
   from = "/api/*"

@@ -27,7 +27,7 @@ import android.webkit.WebViewClient;
 // are driven through the PlannerBridge by the confirmed web schedule.
 public class MainActivity extends Activity implements PlannerBridge.Listener {
     private static final String START_URL =
-        "https://6acc0b8ac15d91cc783c09c5--daily-planning-assistant.netlify.app/";
+        "https://6ad1056cda5658ea6a8c5afd--daily-planning-assistant.netlify.app/";
     private static final int REQ_NOTIFY = 1001;
 
     private WebView web;

@@ -20,5 +20,7 @@ const hasUsers = db
 if (!hasUsers) {
   db.exec(fs.readFileSync(SCHEMA_PATH, "utf8"));
 }
+// Every boot: idempotent upgrades for databases created by older versions.
+require("./migrate").migrate(db);
 
 module.exports = db;

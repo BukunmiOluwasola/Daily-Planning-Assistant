@@ -2,13 +2,15 @@
 // better-sqlite3 is required lazily so the Lambda bundle (which lists it in
 // netlify.toml `external_node_modules`) never loads the native binding.
 const NAMES = [
-  "findUserByEmail", "findUserById", "createUser", "listSessions", "createSession",
+  "findUserByEmail", "findUserById", "createUser", "updateUserPassword", "updateUserSettings", "listSessions", "createSession",
   "getSession", "setPreference", "historyCounts", "listActivities", "maxPosition",
   "insertActivity", "getActivityInSession", "getActivityOwnedBy", "getActivityById",
   "updateActivity", "deleteActivity", "getPlanBySession", "createPlan", "clearPlanItems",
   "addPlanItem", "listPlanItems", "getPlanItemOwned", "updatePlanItem", "getPlanItemById",
   "createFocus", "getFocusOwned", "endFocus", "getFocusById", "reviewCounts",
-  "unfinishedInSession", "markCarried", "latestOpenFocus",
+  "unfinishedInSession", "markCarried", "latestOpenFocus", "focusMinutesBySession",
+  "findOrCreateSessionByDate", "findSessionByDate", "setSessionStart", "bulkInsertActivities",
+  "createResetToken", "findResetTokenByHash", "markResetUsed", "deleteUserResetTokens", "deleteExpiredResets",
 ];
 
 let impl = null;

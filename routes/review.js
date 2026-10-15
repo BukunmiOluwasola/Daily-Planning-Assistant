@@ -59,7 +59,7 @@ router.get("/sessions/:id/focus/open", async (req, res) => {
   }
 });
 
-// Daily review summary for a session.
+// Daily review summary for a session, including reliably recorded focus minutes.
 router.post("/sessions/:id/review", async (req, res) => {
   try {
     const s = await store.getSession(req.params.id, req.session.userId);
@@ -72,27 +72,61 @@ router.post("/sessions/:id/review", async (req, res) => {
       total += r.n;
     }
     const completed = by_status["Completed"] || 0;
-    res.json({ session_id: s.id, total, by_status, completed, remaining: total - completed });
+    res.json({
+      session_id: s.id, total, by_status, completed, remaining: total - completed,
+      focus_minutes: await store.focusMinutesBySession(s.id),
+    });
   } catch (err) {
     res.status(500).json({ error: "Request failed." });
   }
 });
 
-// Carry unfinished items into a new session (default: a fresh 'tomorrow' session).
+// Carry unfinished items into a destination date (default tomorrow).
+// Original history is preserved; destination duplicates are skipped, never duplicated.
 router.post("/sessions/:id/carry-forward", async (req, res) => {
   try {
     const s = await store.getSession(req.params.id, req.session.userId);
     if (!s) return res.status(404).json({ error: "Session not found." });
+    const { isValidDateKey } = require("../lib/plan");
+    const date = (req.body && req.body.date) || null;
     const day = (req.body && req.body.day) || "tomorrow";
     if (!["today", "tomorrow"].includes(day)) return res.status(400).json({ error: "day must be 'today' or 'tomorrow'." });
-    const left = await store.unfinishedInSession(s.id);
-    const nsid = await store.createSession(req.session.userId, day, now());
-    let i = 0;
-    for (const a of left) {
-      await store.insertActivity(nsid, a.text, a.priority, a.effort_min, i++);
+    let destId;
+    let destDate = null;
+    if (date !== null && date !== undefined) {
+      if (!isValidDateKey(date)) return res.status(400).json({ error: "date must be a valid YYYY-MM-DD calendar day." });
+      const found = await store.findOrCreateSessionByDate(req.session.userId, day, date, null, now());
+      destId = found.row.id;
+      destDate = date;
+    } else {
+      destId = await store.createSession(req.session.userId, day, now());
     }
-    await store.markCarried(s.id);
-    res.status(201).json({ new_session_id: nsid, carried: left.length });
+    const left = await store.unfinishedInSession(s.id);
+    let moving = left;
+    if (req.body && req.body.ids !== undefined) {
+      if (!Array.isArray(req.body.ids)) return res.status(400).json({ error: "ids must be an array." });
+      const want = new Set(req.body.ids.map(Number));
+      moving = left.filter((a) => want.has(a.id));
+    }
+    const have = new Set((await store.listActivities(destId)).map((a) => a.text.trim().toLowerCase()));
+    let i = await store.maxPosition(destId);
+    let carried = 0;
+    let skipped = 0;
+    for (const a of moving) {
+      if (have.has(a.text.trim().toLowerCase())) {
+        skipped += 1;
+        continue;
+      }
+      await store.insertActivity(destId, a.text, a.priority, a.effort_min, (i += 1));
+      await store.updateActivity(a.id, { status: "Carried Forward" });
+      carried += 1;
+    }
+    // Full carry (no ids): everything unfinished moves forward together.
+    // Subset carry: only moved items are marked; the rest keep their statuses.
+    if (!req.body || req.body.ids === undefined) {
+      await store.markCarried(s.id);
+    }
+    res.status(201).json({ new_session_id: destId, carried, skipped, date: destDate });
   } catch (err) {
     res.status(500).json({ error: "Request failed." });
   }

@@ -57,6 +57,18 @@ router.put("/preference", async (req, res) => {
   }
 });
 
+// Working-hours + period settings in one place (work times optional, nullable).
+router.put("/settings", async (req, res) => {
+  try {
+    const { productive_period, work_start, work_end } = req.body || {};
+    await store.updateUserSettings(req.session.userId, { productive_period, work_start, work_end });
+    const u = await store.findUserById(req.session.userId);
+    res.json({ productive_period: u.productive_period, work_start: u.work_start, work_end: u.work_end });
+  } catch (err) {
+    res.status(400).json({ error: err.message === "Bad period." || err.message === "Bad time." ? err.message : "Request failed." });
+  }
+});
+
 // History: past sessions with per-status counts.
 router.get("/history/all", async (req, res) => {
   try {
@@ -67,6 +79,63 @@ router.get("/history/all", async (req, res) => {
       (bySession[c.session_id] = bySession[c.session_id] || []).push({ status: c.status, n: c.n });
     }
     res.json(rows.map((s) => ({ ...s, activity_counts: bySession[s.id] || [] })));
+  } catch (err) {
+    res.status(500).json({ error: "Request failed." });
+  }
+});
+
+// Find-or-create the single session for this user and calendar date.
+// Concurrent or repeated calls converge on one row ({ created } tells which).
+router.post("/by-date", async (req, res) => {
+  try {
+    const { date, day, start_time } = req.body || {};
+    const { isValidDateKey } = require("../lib/plan");
+    if (!isValidDateKey(date)) {
+      return res.status(400).json({ error: "date must be a valid YYYY-MM-DD calendar day." });
+    }
+    if (!["today", "tomorrow"].includes(day)) {
+      return res.status(400).json({ error: "day must be 'today' or 'tomorrow'." });
+    }
+    let start = null;
+    if (start_time !== undefined && start_time !== null) {
+      if (!/^([01]\d|2[0-3]):[0-5]\d$/.test(start_time)) {
+        return res.status(400).json({ error: "start_time must be HH:MM." });
+      }
+      start = start_time;
+    }
+    const { row, created } = await store.findOrCreateSessionByDate(
+      req.session.userId, day, date, start, now()
+    );
+    res.status(created ? 201 : 200).json({ ...row, created });
+  } catch (err) {
+    res.status(500).json({ error: "Request failed." });
+  }
+});
+
+router.get("/by-date/:date", async (req, res) => {
+  try {
+    const { isValidDateKey } = require("../lib/plan");
+    if (!isValidDateKey(req.params.date)) {
+      return res.status(400).json({ error: "date must be a valid YYYY-MM-DD calendar day." });
+    }
+    const row = await store.findSessionByDate(req.session.userId, req.params.date);
+    if (!row) return res.status(404).json({ error: "No session for this date yet." });
+    res.json(row);
+  } catch (err) {
+    res.status(500).json({ error: "Request failed." });
+  }
+});
+
+// Change the day-start override for a session (HH:MM, or null for peak-hours default).
+router.patch("/:id/start", async (req, res) => {
+  try {
+    const { start_time } = req.body || {};
+    if (start_time !== null && !/^([01]\d|2[0-3]):[0-5]\d$/.test(start_time || "")) {
+      return res.status(400).json({ error: "start_time must be HH:MM or null." });
+    }
+    const row = await store.setSessionStart(req.params.id, req.session.userId, start_time);
+    if (!row) return res.status(404).json({ error: "Session not found." });
+    res.json(row);
   } catch (err) {
     res.status(500).json({ error: "Request failed." });
   }

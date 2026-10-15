@@ -13,6 +13,8 @@ CREATE TABLE IF NOT EXISTS planning_sessions (
   id         SERIAL PRIMARY KEY,
   user_id    INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
   day        TEXT NOT NULL CHECK (day IN ('today','tomorrow')),
+  day_date   TEXT,
+  start_time TEXT,
   created_at TEXT NOT NULL
 );
 
@@ -25,7 +27,11 @@ CREATE TABLE IF NOT EXISTS activities (
   effort_min INTEGER NOT NULL DEFAULT 30 CHECK (effort_min > 0),
   status     TEXT NOT NULL DEFAULT 'Not Started'
     CHECK (status IN ('Not Started','In Progress','Completed','Partially Completed','Not Completed','Carried Forward')),
-  position   INTEGER NOT NULL DEFAULT 0
+  position   INTEGER NOT NULL DEFAULT 0,
+  deadline   TEXT,
+  notes      TEXT,
+  depends_on INTEGER REFERENCES activities(id) ON DELETE SET NULL,
+  priority_source TEXT
 );
 
 CREATE TABLE IF NOT EXISTS plans (
@@ -61,3 +67,17 @@ CREATE INDEX IF NOT EXISTS idx_sessions_user ON planning_sessions(user_id);
 CREATE INDEX IF NOT EXISTS idx_activities_session ON activities(session_id);
 CREATE INDEX IF NOT EXISTS idx_items_plan ON plan_items(plan_id);
 CREATE INDEX IF NOT EXISTS idx_focus_activity ON focus_sessions(activity_id);
+
+-- One planning session per user per calendar date (NULL day_date = legacy, never conflicts).
+CREATE UNIQUE INDEX IF NOT EXISTS ux_session_user_date ON planning_sessions(user_id, day_date);
+
+-- Password-reset tokens: only hashes are stored, never raw tokens.
+CREATE TABLE IF NOT EXISTS password_resets (
+  id         SERIAL PRIMARY KEY,
+  user_id    INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  token_hash TEXT NOT NULL UNIQUE,
+  expires_at BIGINT NOT NULL,
+  used_at    TEXT,
+  created_at TEXT NOT NULL
+);
+CREATE INDEX IF NOT EXISTS idx_resets_user ON password_resets(user_id);

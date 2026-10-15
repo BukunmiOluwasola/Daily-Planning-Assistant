@@ -26,17 +26,12 @@
           </svg>
         </span>
         <h1 id="landingTitle">Daily Planning <span>Assistant</span></h1>
-        <p class="lede">Dump every thought and task on your mind. Get back a realistic plan built around your hours — not someone else's 9-to-5.</p>
+        <p class="lede">Plan your day. Focus on what matters.</p>
         <div class="row">
-          <button class="btn btn-primary btn-lg" id="ctaBtn" type="button">Plan my day</button>
-          <button class="btn btn-ghost" id="landingSigninBtn" type="button">I already have an account</button>
+          <button class="btn btn-primary btn-lg" id="ctaBtn" type="button">Get started</button>
+          <button class="btn btn-ghost" id="landingSigninBtn" type="button">Log in</button>
           <button class="btn btn-ghost btn-small install-btn" type="button">Install app</button>
         </div>
-        <ol class="mini-steps" aria-label="How it works">
-          <li><strong>Brain dump</strong> — no organising needed</li>
-          <li><strong>AI prioritises</strong> — with reasons, you decide</li>
-          <li><strong>Focus &amp; review</strong> — timer, breaks, carry forward</li>
-        </ol>
       </div>
     </header>
     <footer class="note">Your plans are saved to your account and stay yours.</footer>
@@ -58,18 +53,112 @@
         </div>
       </form>
       <p class="sub">New here? <button class="linklike" id="authToggle" type="button">Create an account</button></p>
+      <p class="sub"><button class="linklike" id="forgotBtn" type="button">Forgot password?</button></p>
       <p><button class="linklike" id="authBackBtn" type="button">← Back</button></p>
+    </div>
+  </section>
+
+  <!-- ============ SETUP (date + start time) ============ -->
+  <section id="view-setup" class="view" aria-labelledby="setupTitle" hidden>
+    <div class="card">
+      <h2 id="setupTitle">Plan a day</h2>
+      <p class="sub">Each date keeps its own session. Revisiting a date restores its work — nothing is overwritten.</p>
+      <label class="field-label">Quick pick</label>
+      <div class="row">
+        <button class="btn btn-ghost btn-small" id="setupTodayBtn" type="button">Today</button>
+        <button class="btn btn-ghost btn-small" id="setupTomorrowBtn" type="button">Tomorrow</button>
+      </div>
+      <label class="field-label" for="setupDate">Or choose another date</label>
+      <input type="date" id="setupDate" />
+      <label class="field-label">Day start time</label>
+      <div class="row">
+        <select id="setupHour" aria-label="Start hour"></select>
+        <select id="setupMin" aria-label="Start minutes"></select>
+        <select id="setupAp" aria-label="AM or PM"><option>AM</option><option>PM</option></select>
+      </div>
+      <p class="form-error" id="setupError" role="alert" hidden></p>
+      <div class="row">
+        <button class="btn btn-primary" id="setupGoBtn" type="button">Start planning →</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ PASSWORD RESET ============ -->
+  <section id="view-reset" class="view" aria-labelledby="resetTitle" hidden>
+    <div class="card auth-card">
+      <h2 id="resetTitle">Reset password</h2>
+      <p class="sub">Enter your account email. If an account exists, a reset link is on its way.</p>
+      <label class="field-label" for="resetEmail">Email</label>
+      <input type="email" id="resetEmail" autocomplete="email" />
+      <p class="form-error" id="resetError" role="alert" hidden></p>
+      <p class="sub" id="resetDone" hidden>If an account exists for that email, a reset link has been sent. It expires in one hour and works once.</p>
+      <div class="row">
+        <button class="btn btn-primary" id="resetSendBtn" type="button">Send reset link</button>
+      </div>
+      <p><button class="linklike" id="resetBackBtn" type="button">← Back to sign in</button></p>
+    </div>
+  </section>
+
+  <section id="view-reset-confirm" class="view" aria-labelledby="resetConfirmTitle" hidden>
+    <div class="card auth-card">
+      <h2 id="resetConfirmTitle">Choose a new password</h2>
+      <label class="field-label" for="newPassword">New password</label>
+      <input type="password" id="newPassword" autocomplete="new-password" />
+      <p class="form-error" id="resetConfirmError" role="alert" hidden></p>
+      <div class="row">
+        <button class="btn btn-primary" id="resetConfirmBtn" type="button">Set new password</button>
+      </div>
     </div>
   </section>
 
   <!-- ============ APP ============ -->
   <section id="view-app" class="view" aria-labelledby="appTitle" hidden>
     <div class="app-head">
-      <h1 id="appTitle">Daily Planning <span>Assistant</span></h1>
+      <div class="app-head-top">
+        <h1 id="appTitle">Daily Planning <span>Assistant</span></h1>
+        <button class="btn btn-ghost" id="menuBtn" type="button" aria-label="Open menu" aria-expanded="false">☰</button>
+      </div>
       <p class="sub" id="meLine">Not signed in.</p>
-      <div class="row">
-        <button class="btn btn-ghost btn-small" id="logoutBtn" type="button">Sign out</button>
-        <button class="btn btn-ghost btn-small install-btn" type="button">Install app</button>
+      <div class="card menu-panel" id="menuPanel" hidden>
+        <h2>Settings</h2>
+        <div class="row">
+          <button class="btn btn-ghost btn-small" id="themeToggle" type="button">Dark mode</button>
+          <button class="btn btn-ghost btn-small" id="refreshAppBtn" type="button">Refresh app</button>
+          <button class="btn btn-ghost btn-small" id="logoutBtn" type="button">Sign out</button>
+        </div>
+        <h3>Working hours</h3>
+        <p class="sub">Used when generating plans. Empty means your peak-hours default.</p>
+        <div class="row">
+          <label>Start: <input type="time" id="setWorkStart" /></label>
+          <label>End: <input type="time" id="setWorkEnd" /></label>
+          <button class="btn btn-ghost btn-small" id="saveHoursBtn" type="button">Save hours</button>
+        </div>
+        <h3>Alerts (this device only)</h3>
+        <p class="sub">Sound plays only while this page is open. It cannot ring when the app is closed — that needs a native update.</p>
+        <div class="row">
+          <label><input type="checkbox" id="alarmStart" checked /> Task starts</label>
+          <label><input type="checkbox" id="alarmEnd" checked /> Task ends</label>
+          <label><input type="checkbox" id="alarmBreak" checked /> Breaks</label>
+        </div>
+        <div class="row">
+          <label>Tone:
+            <select id="alarmTone">
+              <option value="chime">Chime</option>
+              <option value="buzz">Buzz</option>
+              <option value="soft">Soft</option>
+            </select>
+          </label>
+          <button class="btn btn-ghost btn-small" id="tonePreviewBtn" type="button">Preview tone</button>
+        </div>
+        <div class="row">
+          <label><input type="checkbox" id="alarmRepeat" /> Repeat until acknowledged</label>
+          <button class="btn btn-ghost btn-small" id="alarmTestBtn" type="button">Test alarm</button>
+        </div>
+        <div class="row">
+          <label><input type="checkbox" id="speechToggle" /> Spoken announcements</label>
+          <button class="btn btn-ghost btn-small" id="speechPreviewBtn" type="button">Preview voice</button>
+        </div>
+        <p class="sub">Spoken alerts use this device's speech synthesis when available.</p>
       </div>
     </div>
 
@@ -82,16 +171,11 @@
 
     <section class="card" aria-labelledby="sessH">
       <h2 id="sessH">Planning session</h2>
-      <p class="sub">Plan tomorrow the night before, or today right now.</p>
+      <p class="sub" id="currentDateLine">No date selected yet.</p>
+      <details class="collapsible">
+        <summary>Session settings</summary>
       <div class="row">
-        <label>Day:
-          <select id="day">
-            <option value="tomorrow">Tomorrow</option>
-            <option value="today">Today</option>
-          </select>
-        </label>
-        <button class="btn btn-primary" id="createSessionBtn" type="button">New session</button>
-        <button class="btn btn-ghost" id="refreshBtn" type="button">Refresh</button>
+        <button class="btn btn-ghost" id="changeDateBtn" type="button">Change date</button>
       </div>
       <div class="row">
         <label>My peak hours:
@@ -113,23 +197,48 @@
         </label>
         <span class="sub" id="zoneLine"></span>
       </div>
+      </details>
     </section>
 
     <section class="card" aria-labelledby="histH">
       <h2 id="histH">Sessions &amp; history</h2>
       <p class="sub">Your saved planning sessions, newest first. Open one to continue.</p>
+      <details class="collapsible" open>
+        <summary>Your sessions</summary>
       <ul class="items" id="sessionList"></ul>
+      </details>
     </section>
 
     <section class="card" id="workCard" aria-labelledby="workTitle" hidden>
       <h2 id="workTitle">Session</h2>
-      <p class="sub">Brain dump → clarify → prioritise → plan.</p>
+      <ol class="wsteps" aria-label="Planning steps">
+        <li data-wstep="dump" class="active">1 · Brain dump</li>
+        <li data-wstep="clarify">2 · Clarify</li>
+        <li data-wstep="plan">3 · Plan</li>
+        <li data-wstep="focus">4 · Execute</li>
+        <li data-wstep="review">5 · Review</li>
+      </ol>
+      <div class="wpanel" data-wpanel="dump">
+      <p class="sub">Say everything on your mind — one thing per line. No organising needed.</p>
       <label class="field-label" for="dump">What's on your mind? Tell me everything you want to get done.</label>
       <textarea id="dump" rows="4" placeholder="One thing per line — no organising needed"></textarea>
       <div class="row">
-        <button class="btn btn-primary" id="parseBtn" type="button">Get my suggested plan</button>
+        <button class="btn btn-primary" id="parseBtn" type="button">Review tasks →</button>
+        <button class="btn btn-ghost btn-small" id="micBtn" type="button" aria-label="Dictate tasks">🎤 Dictate</button>
       </div>
-      <h3>Clarification</h3>
+      <p class="sub" id="voiceHint" hidden>Voice input isn't available here — your phone keyboard's microphone works great for dictation.</p>
+      <div id="previewBox" hidden>
+        <h3>Review tasks</h3>
+        <p class="sub">Edit or remove anything, then submit. Nothing is saved until you submit.</p>
+        <ul class="items" id="previewList"></ul>
+        <div class="row">
+          <button class="btn btn-primary" id="submitBtn" type="button">Submit tasks</button>
+          <button class="btn btn-ghost" id="cancelPreviewBtn" type="button">Cancel</button>
+        </div>
+      </div>
+      </div>
+      <div class="wpanel" data-wpanel="clarify" hidden>
+      <h3>Clarification <span class="sub">— optional, skip anytime</span></h3>
       <ul class="items" id="questionList"></ul>
       <h3>Priorities</h3>
       <div class="row">
@@ -138,11 +247,28 @@
       <div id="aiBox"></div>
       <ul class="items" id="activityList"></ul>
       <div id="realityBox"></div>
+      </div>
+      <div class="wpanel" data-wpanel="plan" hidden>
       <h3>Suggested plan</h3>
       <div class="row">
         <button class="btn btn-primary" id="genPlanBtn" type="button">Generate plan</button>
       </div>
       <ul class="items" id="planList"></ul>
+      <div id="unschedBox"></div>
+      <div class="row">
+        <button class="btn btn-primary" id="confirmPlanBtn" type="button">Confirm schedule</button>
+      </div>
+      <p class="sub" id="confirmState"></p>
+      </div>
+      <div class="wpanel" data-wpanel="focus" hidden>
+      <h3 id="execDate">Today's execution</h3>
+      <p class="sub" id="monitorState" aria-live="polite"></p>
+      <div id="nowNext"></div>
+      <p class="sub" id="nextCountdown" aria-live="polite"></p>
+      <ul class="items" id="execList"></ul>
+      <div id="taskEndBox" hidden></div>
+      <div id="missedBox"></div>
+      <div id="alarmBox"></div>
       <h3>Focus &amp; break</h3>
       <div class="row">
         <label>Activity: <select id="focusPick" aria-label="Activity to focus on"></select></label>
@@ -152,13 +278,28 @@
       </div>
       <p class="timer" id="focusTimer" aria-live="polite">25:00</p>
       <div id="breakBox"></div>
+      </div>
+      <div class="wpanel" data-wpanel="review" hidden>
       <h3>Daily review</h3>
       <ul class="items" id="reviewList"></ul>
       <div class="row">
         <button class="btn btn-primary" id="reviewBtn" type="button">Complete review</button>
-        <button class="btn btn-ghost" id="carryBtn" type="button">Carry forward unfinished</button>
       </div>
       <div id="summaryBox"></div>
+      <h3>Carry forward</h3>
+      <p class="sub">Tick the unfinished tasks to move. The original day keeps its history.</p>
+      <ul class="items" id="carryList"></ul>
+      <div class="row">
+        <label>To date: <input type="date" id="carryDate" /></label>
+        <button class="btn btn-ghost" id="carryBtn" type="button">Carry selected forward</button>
+      </div>
+      </div>
+      <div class="row wnav">
+        <button class="btn btn-ghost" id="wBackBtn" type="button">← Back</button>
+        <button class="btn btn-ghost btn-small" id="undoBtn" type="button" aria-label="Undo last change" title="Undo last change (Ctrl+Z)">↩</button>
+        <button class="btn btn-ghost btn-small" id="redoBtn" type="button" aria-label="Redo" title="Redo (Ctrl+Y)">↪</button>
+        <button class="btn btn-primary" id="wNextBtn" type="button">Continue →</button>
+      </div>
     </section>
   </section>
 

@@ -14,8 +14,19 @@ android {
         versionName = "1.0.0"
     }
 
+    signingConfigs {
+        create("release") {
+            storeFile = file(System.getenv("DPA_KEYSTORE") ?: "")
+            storePassword = System.getenv("DPA_STORE_PASS")
+            keyAlias = "dpa"
+            keyPassword = System.getenv("DPA_KEY_PASS")
+        }
+    }
     buildTypes {
         release {
+            // Release signing via env vars (keystore stays outside the repo).
+            // DPA_KEYSTORE, DPA_STORE_PASS, DPA_KEY_PASS must be set, else Gradle fails.
+            signingConfig = signingConfigs.getByName("release")
         }
     }
     compileOptions {

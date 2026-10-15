@@ -15,6 +15,27 @@ function makeApp(sessionMiddleware) {
   app.use(express.json());
   app.use(sessionMiddleware);
 
+  // Idle + absolute session lifetimes (single place, all backends/targets).
+  // IDLE: sign out after 60 min without any request. ABSOLUTE: 12 h max
+  // even if continuously active. Expired callers get 401 and re-sign in.
+  const IDLE_MS = 60 * 60 * 1000;
+  const ABS_MS = 12 * 60 * 60 * 1000;
+  app.use((req, res, next) => {
+    try {
+      const s = req.session;
+      if (!s || !s.userId) return next();
+      const nowMs = Date.now();
+      if (!s.createdAt) s.createdAt = nowMs;
+      if (nowMs - s.createdAt > ABS_MS || (s.lastSeen && nowMs - s.lastSeen > IDLE_MS)) {
+        return s.destroy(() => res.status(401).json({ error: "Session expired. Please sign in again." }));
+      }
+      s.lastSeen = nowMs;
+      return next();
+    } catch (err) {
+      return next();
+    }
+  });
+
   // NOTE: "/history/all" has two path segments so it never collides with "/:id".
   app.use("/api/users", users);
   app.use("/api/sessions", sessions);

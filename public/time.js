@@ -79,5 +79,24 @@
     }).format(d);
   }
 
-  return { parseHHMM, hour12, hour24, fmtTime, from12, localZone, fmtInstant };
+  // Format a calendar-day key "YYYY-MM-DD" as "Tuesday, 13 October 2026".
+  // Constructed in local time (never `new Date("YYYY-MM-DD")`, which parses
+  // as UTC midnight and shifts the day for negative offsets).
+  function fmtDateKey(key) {
+    const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(key || "");
+    if (!m) throw new Error("Bad date: " + key);
+    const d = new Date(Number(m[1]), Number(m[2]) - 1, Number(m[3]));
+    if (isNaN(d) || d.getFullYear() !== Number(m[1]) || d.getMonth() !== Number(m[2]) - 1 || d.getDate() !== Number(m[3])) {
+      throw new Error("Bad date: " + key);
+    }
+    return d.toLocaleDateString("en-GB", { weekday: "long", day: "numeric", month: "long", year: "numeric" });
+  }
+
+  // Today's calendar-day key in LOCAL time (never UTC date, which may differ).
+  function todayKey() {
+    const d = new Date();
+    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+  }
+
+  return { parseHHMM, hour12, hour24, fmtTime, from12, localZone, fmtInstant, fmtDateKey, todayKey };
 });
